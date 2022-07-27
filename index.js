@@ -1,11 +1,20 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
+const { request, response } = require('express')
 
 app.use(cors())
 
 //para poder crear una post.
 app.use(express.json())
+
+app.use((request, response, next) =>{
+  console.log(request.method)
+  console.log(request.path)
+  console.log(request.body)
+  console.log('-------------------------')
+  next()
+})
 
 let notes = [
     {
@@ -83,6 +92,12 @@ app.delete('/api/notes/:id', (request, response) => {
     notes = notes.concat(note)
   
     response.json(note)
+  })
+
+  app.use((request, response)=>{
+    response.status(404).json({
+      error: 'Not Found'
+    })
   })
   
   const PORT = process.env.PORT || 3001
