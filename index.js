@@ -1,5 +1,9 @@
 const express = require('express')
 const app = express()
+require('dotenv').config()  //para poder usar las variables de entorno
+require('./data/mongo')
+
+const Note = require('./models/Note')
 const cors = require('cors')
 const { request, response } = require('express')
 
@@ -8,41 +12,18 @@ app.use(cors())
 //para poder crear una post.
 app.use(express.json())
 
-app.use((request, response, next) =>{
-  console.log(request.method)
-  console.log(request.path)
-  console.log(request.body)
-  console.log('-------------------------')
-  next()
-})
 
-let notes = [
-    {
-      id: 1,
-      content: "HTML is easydfgdfgdfdfdfdfdf",
-      date: "2019-05-30T17:30:31.098Z",
-      important: true
-    },
-    {
-      id: 2,
-      content: "Browser can execute only Javascript",
-      date: "2019-05-30T18:39:34.091Z",
-      important: false
-    },
-    {
-      id: 3,
-      content: "GET and POST are the most important methods of HTTP protocol",
-      date: "2019-05-30T19:20:14.298Z",
-      important: true
-    }
-  ]
+
 
   app.get('/', (request, response) => {
     response.send('<h1>Hello World!</h1>')
   })
   
   app.get('/api/notes', (request, response) => {
-    response.json(notes)
+    Note.find({}).then( notes => {
+        response.json(notes)
+      }
+    )
   })
 
   app.get('/api/notes/:id', (request, response) => {
@@ -100,7 +81,7 @@ app.delete('/api/notes/:id', (request, response) => {
     })
   })
   
-  const PORT = process.env.PORT || 3001
+  const PORT = process.env.PORT
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
   })
