@@ -8,10 +8,9 @@ const cors = require('cors')
 const { request, response } = require('express')
 
 app.use(cors())
-
-//para poder crear una post.
+app.use(express.static('build'))
 app.use(express.json())
-
+//app.use(logger)
 
 
 
@@ -26,26 +25,28 @@ app.use(express.json())
     )
   })
 
-  app.get('/api/notes/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const note = notes.find(note => note.id === id)
-
-    if(note)
-    {
+  app.get('/api/notes/:id', (request, response, next) => {
+    
+    const id = request.params.id
+    console.log(id)
+    Note.findById(id)
+    .then(note =>{
+      if(note)
         response.json(note)
-    }else
-    {
+      else
         response.status(404).end()
-    }
+    })
+    .catch(error => next(error))    
 })
 
 
 
-app.delete('/api/notes/:id', (request, response) => {
-    const id = Number(request.params.id)
-    notes = notes.filter(note => note.id !== id)
-  
-    response.status(204).end()
+app.delete('/api/notes/:id', (request, response, next) => {
+    Note.findByIdAndRemove(request.params.id)
+    .then(result => {
+      response.status(204).end()
+    })
+    .catch(error => next(error))
   })
 
   const generateId = () => {
@@ -62,18 +63,44 @@ app.delete('/api/notes/:id', (request, response) => {
           error: 'content missing' 
         })
       }
-    
-      const note = {
+
+      const note = new Note({
         content: body.content,
         important: body.important || false,
-        date: new Date(),
-        id: generateId(),
-      }
-  
-    notes = notes.concat(note)
-  
-    response.json(note)
+        date: new Date()        
+      })
+      note.save().then(saveNote => {
+          response.json(saveNote)
+        }
+      )
+    
   })
+  app.put('/api/notes/:id', (request, response, next) => {
+    const body = request.body
+  
+    const note = {
+      content: body.content,
+      important: body.important,
+    }
+  
+    Note.findByIdAndUpdate(request.params.id, note, { new: true })
+      .then(updatedNote => {
+        response.json(updatedNote)
+      })
+      .catch(error => next(error))
+  })
+
+  const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+  
+    if (error.name === 'CastError') {
+      return response.status(400).send({ error: 'malformatted id' })
+    } 
+  
+    next(error)
+  }
+  
+  app.use(errorHandler)
 
   app.use((request, response)=>{
     response.status(404).json({
