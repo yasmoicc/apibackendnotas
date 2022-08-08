@@ -1,13 +1,14 @@
 const notesRouter = require('express').Router()
 const Note = require('../models/note')
+const User = require('../models/User')
 
 
   
-  notesRouter.get('/', (request, response) => {
-    Note.find({}).then( notes => {
-        response.json(notes)
-      }
-    )
+  notesRouter.get('/', async (request, response) => {
+    const notes = await Note.find({})
+    response.status(200).json(notes)
+      
+    
   })
 
   notesRouter.get('/:id', (request, response, next) => {
@@ -16,40 +17,38 @@ const Note = require('../models/note')
     Note.findById(id)
     .then(note =>{
       if(note)
-        response.json(note)
+        response.status(201).json(note)
       else
         response.status(404).end()
     })
     .catch(error => next(error))    
 })
 
-notesRouter.delete('/:id', (request, response, next) => {
-    Note.findByIdAndRemove(request.params.id)
-    .then(result => {
-      response.status(204).end()
-    })
-    .catch(error => next(error))
-  }) 
+notesRouter.delete('/:id', async (request, response, next) => {
+   
+  await Note.findByIdAndRemove(request.params.id)
+  response.status(204).end()
+}) 
   
-  notesRouter.post('/', (request, response, next) => {    
-    const body = request.body
-    if (!body.content) {
-        return response.status(400).json({ 
-          error: 'content missing' 
-        })
-      }
-
+  notesRouter.post('/', async (request, response, next) => {    
+    const {content, important, userid} = request.body    
+      //console.log(request.body)
+      const userBD = await User.findById(userid)
       const note = new Note({
-        content: body.content,
-        important: body.important || false,
-        date: new Date()        
-      })
-      note.save()
-      .then(saveNote => {
-          response.json(saveNote.toJSON())
-        }
-      )
-      .catch(error => next(error))
+        content,
+        important,
+        date: new Date(),
+        user: userBD._id       
+      })      
+       
+      try {
+        const savednote = await note.save()
+        userBD.notes =  userBD.notes.concat(savednote)
+        await userBD.save()    
+        response.json(savednote.toJSON())
+      } catch (exception) {
+        next(exception)
+      }
     
   })
   notesRouter.put('/:id', (request, response, next) => {

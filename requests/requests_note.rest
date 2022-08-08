@@ -1,0 +1,26 @@
+POST http://localhost:3001/api/notes
+Content-Type: application/json
+
+{
+    "content": "esta es una nueva prueba",
+    "important": true,    
+    "userid": "62efe8e1c51e6df9f1f39381"
+}
+
+###
+DELETE  http://localhost:3001/api/notes/62e54d02c778bbcbbae2550f
+
+###
+http://localhost:3001/api/notes/
+
+###
+GET http://localhost:3001/api/notes/62e69f6962eb9f97da836653
+
+###
+PUT http://localhost:3001/api/notes/62e69f6962eb9f97da836653
+Content-Type: application/json
+
+{
+    "content": "postman is a good tool for testing",
+    "important": true
+}

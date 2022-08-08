@@ -1,0 +1,26 @@
+POST http://localhost:3001/api/users
+Content-Type: application/json
+
+{
+    "username": "yasmoicc",
+    "name": "Yasmany",
+    "password": "123456"
+}
+
+###
+DELETE  http://localhost:3001/api/notes/62e54d02c778bbcbbae2550f
+
+###
+http://localhost:3001/api/users/
+
+###
+GET http://localhost:3001/api/notes/62e69f6962eb9f97da836653
+
+###
+PUT http://localhost:3001/api/notes/62e69f6962eb9f97da836653
+Content-Type: application/json
+
+{
+    "content": "postman is a good tool for testing",
+    "important": true
+}
